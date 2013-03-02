@@ -9,13 +9,23 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graphviz.hpp>
 
+#include <regex>
+
 using namespace boost;
+using namespace std;
+
+// A Grassy 
+// A B weak
 
 namespace Evi
 {
-	struct Island
+	enum class LinkType { Weak, Near, Strong };
+	enum class Terrain { Grassy, Mountain, Swamp};
+
+	struct IslandPropertySet
 	{
-		std::string custom;
+		std::string		name;
+		Terrain			terrain;
 	};
 	struct Link
 	{
@@ -26,21 +36,47 @@ namespace Evi
 		int	startNode;
 		int	finishNode;
 	};	
+	void ExtractData(IslandPropertySet& node, const std::string& data)
+	{
+		vector<string> tokens;
+		istringstream iss(data);
+		copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
+
+
+
+
+	}
 
 	class Archipelago
 	{
-		typedef adjacency_list<vecS, vecS, undirectedS, Island, Link, RaceProperties> Graph;
+		typedef adjacency_list<vecS, vecS, undirectedS, IslandPropertySet, Link, RaceProperties> Graph;
 	public:
 		void MakeGraph();
 		void PrintVertexAndEdgeData();
 		void PrintOutgoingEdges();
+		void StackOverflow();
+		
 	private:
 		Graph g;
 	};
 }
 
+const static std::string islandDataFile = "islands.dat";
 void Evi::Archipelago::MakeGraph()
 {
+	// read from file if present
+	std::ifstream is(islandDataFile);
+	if (is.good())
+	{
+		std::vector<std::string> islandDataStrings;
+		std::istream_iterator<std::string> start(is), end;
+		islandDataStrings = std::vector<std::string>(start, end);
+
+		std::vector<IslandPropertySet> islandNodeData(islandDataStrings.size());
+		ExtractData(*islandNodeData.begin(), *islandDataStrings.begin());
+		//for_each(islandDataStrings.begin(), islandDataStrings.end(), );
+	}
+
 	// create a typedef for the Graph type
 	
 	// Make convenient labels for the vertices
@@ -69,17 +105,51 @@ void Evi::Archipelago::MakeGraph()
 	edges.push_back( Edge(L, M) );
 	edges.push_back( Edge(L, N) );
 
-#ifdef ADD
-	// add the edges to the graph object
-	g = Graph(num_vertices);
-	const int num_edges = edges.size();	
-	for (int i = 0; i < num_edges; ++i)
-	{
-		add_edge(edges[i].first, edges[i].second, g);
-	}
-#else
 	g = Graph(edges.begin(), edges.end(), num_vertices);
-#endif
+	
+
+	//typename property_map<Graph, vertex_index_t>::type vertex_id = get(vertex_index, g);
+
+	g[0].name = "vertex 0" ;
+	g[1].name = "vertex 1" ;
+	g[2].name = "vertex 2" ;
+	g[3].name = "vertex 3" ;
+
+	Graph::edge_descriptor e = *boost::edges(g).first;
+	//Graph::edge_bundled foo;
+	g[e].custom = "edge 0";
+
+	Graph::vertex_descriptor v = *vertices(g).first;
+	std::cout << ":" << g[1].name << ":" ;
+}
+
+void Evi::Archipelago::StackOverflow()
+{
+	//Define a class that has the data you want to associate to every vertex and edge
+	struct Vertex{ int foo;};
+	struct Edge{std::string blah;};
+
+	//Define the graph using those classes
+	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, Vertex, Edge > Graph;
+	//Some typedefs for simplicity
+	typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
+	typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+
+	//Instanciate a graph
+	Graph g;
+
+	// Create two vertices in that graph
+	vertex_t u = boost::add_vertex(g);
+	vertex_t v = boost::add_vertex(g);
+
+	// Create an edge conecting those two vertices
+	edge_t e; bool b;
+	boost::tie(e,b) = boost::add_edge(u,v,g);
+
+
+	// Set the properties of a vertex and the edge
+	g[u].foo = 42;
+	g[e].blah = "Hello world";
 }
 
 void Evi::Archipelago::PrintVertexAndEdgeData()
@@ -89,7 +159,7 @@ void Evi::Archipelago::PrintVertexAndEdgeData()
 	IndexMap index = get(vertex_index, g);
 	
 	Graph::vertex_descriptor v = *vertices(g).first;
-	g[v].custom = "grassy";
+	g[v].name = "grassy";
 	int i = 0;
 	Graph::edge_descriptor e = *edges(g).first;
 	g[e].custom = "weak";
@@ -102,7 +172,7 @@ void Evi::Archipelago::PrintVertexAndEdgeData()
 		std::cout << index[*vp.first] <<  " ";
 
 		Graph::vertex_descriptor v = *vertices(g).first;
-		std::cout << g[v+i++].custom << " ";
+		std::cout << g[v+i++].name << " ";
 	}
 	std::cout << std::endl;
 
@@ -111,10 +181,10 @@ void Evi::Archipelago::PrintVertexAndEdgeData()
 	graph_traits<Graph>::edge_iterator ei, ei_end;
 	for (boost::tie(ei, ei_end) = boost::edges(g); ei != ei_end; ++ei)
 	{
-		//std::cout << "(" << index[source(*ei, g)]  << "," << index[target(*ei, g)] << ") ";
+		std::cout << "(" << index[source(*ei, g)]  << "," << index[target(*ei, g)] << ") ";
 			
-		Graph::edge_descriptor e = *edges(g).first;
-		std::cout << g[e].custom << " ";
+		//Graph::edge_descriptor e = *edges(g).first;
+		//std::cout << g[e].custom << " ";
 	}
 	std::cout << std::endl;
 }

@@ -76,7 +76,7 @@ int main(int,char*[])
 {
 	Evi::Archipelago archi;
 	archi.MakeGraph();
-	archi.PrintVertexAndEdgeData();
+	//archi.PrintVertexAndEdgeData();
 /*
 	// create a typedef for the Graph type
   typedef adjacency_list<vecS, vecS, bidirectionalS, no_property, property<edge_weight_t, float> > Graph;
