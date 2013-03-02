@@ -74,9 +74,21 @@ template <class Graph> struct exercise_vertex {
 */
 int main(int,char*[])
 {
-	Evi::Archipelago archi;
-	archi.MakeGraph();
-	//archi.PrintVertexAndEdgeData();
+	try
+	{
+		Evi::Archipelago archi;
+		archi.MakeGraph();
+		archi.PrintVertexAndEdgeData();
+	}
+	catch (std::runtime_error& error)
+	{
+		std::cerr << "An unexpected error has occured.\n" << error.what() << "Exiting ...\n";
+	}
+	catch (...)
+	{
+		std::cerr << "An unexpected error has occured.\nExiting ...\n";
+	}
+	
 /*
 	// create a typedef for the Graph type
   typedef adjacency_list<vecS, vecS, bidirectionalS, no_property, property<edge_weight_t, float> > Graph;
