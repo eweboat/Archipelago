@@ -5,15 +5,17 @@
 class IslandBase;
 class VehicleBase;
 
-class Race
+namespace Evi
 {
-public:
-	Race() 
+	class Race
 	{
-	}
+	public:
+		Race(const IslandBase& start, const IslandBase&	finish);
+	
 
-private:
-	std::vector<VehicleBase>	m_vehicles;
-	const IslandBase&			m_start;
-	const IslandBase&			m_finish;
+	private:
+		std::vector<VehicleBase*>	m_vehicles;
+		const IslandBase&			m_start;
+		const IslandBase&			m_finish;
+	};
 }
