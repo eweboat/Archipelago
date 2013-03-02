@@ -48,7 +48,7 @@ namespace Evi
 
 	// for a data string extract node data values
 	// throws if cannot execute
-	void ExtractData(IslandPropertySet& node, const std::string& data)
+	IslandPropertySet ExtractData(const std::string& data)
 	{
 		// split data line into token
 		std::vector<std::string> tokens;
@@ -64,6 +64,7 @@ namespace Evi
 		}
 
 		// extract data to node
+		IslandPropertySet node;
 		node.name = tokens.at(0);
 		std::string terrainTypeString(tokens.at(1));
 		// perform lower case string comparision to map terrain type to enum
@@ -86,6 +87,7 @@ namespace Evi
 		}
 
 		std::cout << "name = " << node.name << " terrain = " << terrainTypeString << "\n";
+		return node;
 	}
 
 	typedef adjacency_list<vecS, vecS, undirectedS, IslandPropertySet, Link, RaceProperties> Graph;
@@ -95,7 +97,7 @@ namespace Evi
 	class Archipelago
 	{
 	public:
-		void FindIslandByName(const std::string& name);
+		bool FindIslandByName(const std::string& name, unsigned int& vertexHandle);
 
 		void MakeGraph();
 		void PrintVertexAndEdgeData();
@@ -112,6 +114,7 @@ namespace Evi
 void Evi::Archipelago::MakeGraph()
 {
 	ReadVertiesFromFile();
+	ReadEdgesFromFile();
 }
 
 void Evi::Archipelago::ReadVertiesFromFile()
@@ -126,19 +129,15 @@ void Evi::Archipelago::ReadVertiesFromFile()
 			std::istream_iterator<std::string> start(is), end;
 			std::vector<std::string> islandDataStrings = std::vector<std::string>(start, end);
 			// extact data to property set
-			std::vector<IslandPropertySet> islandNodeData(islandDataStrings.size());
-			auto islandNodeIter = islandNodeData.begin();
-			for_each(islandDataStrings.begin(), islandDataStrings.end(), boost::bind(&ExtractData, *islandNodeIter++, _1));
+			std::vector<IslandPropertySet> islandNodes(islandDataStrings.size());
+			auto nodeDataIter = islandDataStrings.begin();
+			std::transform (islandDataStrings.begin(), islandDataStrings.end(), islandNodes.begin(), ExtractData);
 			// insert data into graph
-			for ( auto island : islandNodeData )
+			for ( auto island : islandNodes )
 			{
 				vertex_t u = boost::add_vertex(g);
-				vertex_t v = boost::add_vertex(g);
 				g[u].name = island.name;
 				g[u].terrain = island.terrain;
-
-				edge_t e; bool b;
-				boost::tie(e,b) = boost::add_edge(u,v,g);
 			}
 
 		}
@@ -148,72 +147,51 @@ void Evi::Archipelago::ReadVertiesFromFile()
 		throw std::runtime_error(error.what() + std::string("Error in file: ") + islandDataFile + "\n");
 	}
 
-	FindIslandByName("A");
+	unsigned int searchResult;
+	if (FindIslandByName("A", searchResult))
+	{
+		std::cout <<"Found it: " << g[searchResult].name << "\n";
+	}
 }
 
 void Evi::Archipelago::ReadEdgesFromFile()
 {
 	// Create an edge conecting those two vertices
-	edge_t e; bool b;
+	//edge_t e; bool b;
 	//boost::tie(e,b) = boost::add_edge(u,v,g);
 	//boost::tie(e,b) = boost::add_edge(u,v,g);
 
-	// Set the properties of a vertex and the edge
-	g[e].linkType = LinkType::Strong;
+	//// Set the properties of a vertex and the edge
+	//g[e].linkType = LinkType::Strong;
 }
 
 
 
-void Evi::Archipelago::StackOverflow()
-{
-	//Define a class that has the data you want to associate to every vertex and edge
-	struct Vertex{ int foo;};
-	struct Edge{std::string blah;};
 
-	//Define the graph using those classes
-	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, Vertex, Edge > Graph;
-	//Some typedefs for simplicity
-	typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
-	typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
-
-	//Instanciate a graph
-	Graph g;
-
-	// Create two vertices in that graph
-	vertex_t u = boost::add_vertex(g);
-	vertex_t v = boost::add_vertex(g);
-
-	// Create an edge conecting those two vertices
-	edge_t e; bool b;
-	boost::tie(e,b) = boost::add_edge(u,v,g);
-
-
-	// Set the properties of a vertex and the edge
-	g[u].foo = 42;
-	g[e].blah = "Hello world";
-}
 //bool IsTrue(const graph_traits<Evi::Graph>::vertex_iterator&)
 //{
 //	return true;
 //}
 
-void Evi::Archipelago::FindIslandByName(const std::string& name)
+bool Evi::Archipelago::FindIslandByName(const std::string& name, unsigned int& vertexHandle)
 {
 	// TODO: Come back and clean up ... maybe use find_if
 	// get the property map for vertex indices
 	typedef property_map<Graph, vertex_index_t>::type IndexMap;
 	IndexMap index = get(vertex_index, g);
 	
-	typedef graph_traits<Graph>::vertex_iterator vertex_iter;
-	std::pair<vertex_iter, vertex_iter> vp;
-	for (vp = vertices(g); vp.first != vp.second; ++vp.first)
+	graph_traits<Graph>::vertex_iterator it, end;
+	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
 	{
-		std::cout << "looking for \"" << name << "\" found \"" << g[*vp.first].name << "\"\n";
-		if (g[*vp.first].name == name)
+		std::cout << "looking for \"" << name << "\" found \"" << g[*it].name << "\"\n";
+		if (g[*it].name == name)
 		{
-			int foo = 1;
+			vertexHandle = *it;
+			return true;
 		}
+
 	}
+	return false;
 
 	//vp = vertices(g);
 	//auto findResult = std::find_if (vp.first, vp.second, IsTrue);
@@ -225,19 +203,13 @@ void Evi::Archipelago::PrintVertexAndEdgeData()
 	// get the property map for vertex indices
 	typedef property_map<Graph, vertex_index_t>::type IndexMap;
 	IndexMap index = get(vertex_index, g);
-	
-	Graph::vertex_descriptor v = *vertices(g).first;
-	g[v].name = "grassy";
-	int i = 0;
-	Graph::edge_descriptor e = *edges(g).first;
-	g[e].linkType = LinkType::Near;
 
+	int i = 0;
 	std::cout << "vertices(g) = ";
-	typedef graph_traits<Graph>::vertex_iterator vertex_iter;
-	std::pair<vertex_iter, vertex_iter> vp;
-	for (vp = vertices(g); vp.first != vp.second; ++vp.first)
+	graph_traits<Graph>::vertex_iterator it, end;
+	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
 	{
-		std::cout << index[*vp.first] <<  " ";
+		std::cout << index[*it] <<  " ";
 
 		Graph::vertex_descriptor v = *vertices(g).first;
 		std::cout << g[v+i++].name << " ";
@@ -279,7 +251,34 @@ void Evi::Archipelago::PrintOutgoingEdges()
 
 
 
+void Evi::Archipelago::StackOverflow()
+{
+	//Define a class that has the data you want to associate to every vertex and edge
+	struct Vertex{ int foo;};
+	struct Edge{std::string blah;};
 
+	//Define the graph using those classes
+	typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, Vertex, Edge > Graph;
+	//Some typedefs for simplicity
+	typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
+	typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+
+	//Instanciate a graph
+	Graph g;
+
+	// Create two vertices in that graph
+	vertex_t u = boost::add_vertex(g);
+	vertex_t v = boost::add_vertex(g);
+
+	// Create an edge conecting those two vertices
+	edge_t e; bool b;
+	boost::tie(e,b) = boost::add_edge(u,v,g);
+
+
+	// Set the properties of a vertex and the edge
+	g[u].foo = 42;
+	g[e].blah = "Hello world";
+}
 
 
 
