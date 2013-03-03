@@ -15,10 +15,7 @@ const static std::string strongLinkString = "strong";
 const static std::string weakLinkString = "weak";
 const static std::string nearLinkString = "near";
 
-
-
-	
-
+// todo knock these into shape
 struct IslandProperties
 {
 	std::string		name;
@@ -36,8 +33,5 @@ struct LinkData
 	IslandHandle	resolvedNodeB;
 	LinkProperties	properties;
 };	
-struct RaceProperties
-{
-	int	startNode;
-	int	finishNode;
-};
+
+

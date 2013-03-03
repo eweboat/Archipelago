@@ -1,8 +1,9 @@
 #include "VehicleBase.h"
 
-void VehicleBase::Reset(IslandHandle island)
+void VehicleBase::Reset(IslandHandle location, IslandHandle target)
 {
-	m_currentIsland = island;
+	m_currentIsland = location;
+	m_targetIsland = target;
 }
 
 IslandHandle VehicleBase::GetIsland() const

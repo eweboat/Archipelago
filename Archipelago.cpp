@@ -140,8 +140,9 @@ void Archipelago::PrintOutgoingEdges() const
 	//std::cout << std::endl;
 }
 
-void Archipelago::Visit(const VehicleBase& vehicle)
+void Archipelago::Visit(VehicleBase& vehicle)
 {
+	vehicle.ChooseNextIsland();
 }
 
 

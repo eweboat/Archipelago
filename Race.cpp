@@ -22,9 +22,10 @@ void Race::StartRace()
 {
 	// put each vehicle on the starting island
 	IslandHandle startIsland = m_start; // must be in local scope for lambda function
-	for_each (m_vehicles.begin(), m_vehicles.end(), [startIsland](VehicleBase* vehicle)
+	IslandHandle finishIsland = m_finish; // must be in local scope for lambda function
+	for_each (m_vehicles.begin(), m_vehicles.end(), [startIsland, finishIsland](VehicleBase* vehicle)
 		{	
-			vehicle->Reset(startIsland); 
+			vehicle->Reset(startIsland, finishIsland); 
 		}
 	);
 }

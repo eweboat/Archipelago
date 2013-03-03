@@ -67,7 +67,7 @@
     <ClCompile Include="Factory.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Race.cpp" />
-    <ClCompile Include="Vechicle.cpp" />
+    <ClCompile Include="VehicleBase.cpp" />
     <ClCompile Include="VehicleBuilder.cpp" />
     <ClCompile Include="WheeledVehicle.cpp" />
   </ItemGroup>

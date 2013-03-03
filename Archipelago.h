@@ -24,7 +24,7 @@
 using namespace boost;
 using namespace std;
 
-typedef adjacency_list<vecS, vecS, undirectedS, IslandProperties, LinkProperties, RaceProperties> Graph;
+typedef adjacency_list<vecS, vecS, undirectedS, IslandProperties, LinkProperties> Graph;
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
 typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
@@ -39,7 +39,7 @@ public:
 	Archipelago(const std::string& islandFile, const std::string& linkFile);
 	bool FindIslandByName(const std::string& name, IslandHandle& island);
 
-	void Visit(const class VehicleBase& vehicle);
+	void Visit(class VehicleBase& vehicle);
 
 	void PrintVertexAndEdgeData() const;
 	void PrintOutgoingEdges() const;
