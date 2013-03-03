@@ -32,14 +32,16 @@ class Archipelago
 {
 public:
 	Archipelago(const std::string& islandFile, const std::string& linkFile);
-	bool FindIslandByName(const std::string& name, IslandHandle& island);
 
-	void Visit(class VehicleBase& vehicle);
+	bool FindIslandByName(const std::string& name, IslandHandle& island);
+	bool FindIslandNameByHandle(IslandHandle island, std::string& name) const;
+
+	void Visit(class VehicleBase& vehicle) const;
 
 private:
-	// todo give member variables better names
-	std::map<std::string, IslandHandle> vertexDict;
-	Graph m_islandGraph;
+	typedef std::map<std::string, IslandHandle>	VertexDict;
+	VertexDict								m_vertexDict;
+	Graph									m_islandGraph;
 };
 
 

@@ -74,8 +74,8 @@ Archipelago::Archipelago(const std::string& islandFile, const std::string& linkF
 bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island)
 {
 	// search class dict for mapping
-	auto searchResult = vertexDict.find(name);
-	if (searchResult != vertexDict.end())
+	auto searchResult = m_vertexDict.find(name);
+	if (searchResult != m_vertexDict.end())
 	{
 		island = searchResult->second;
 		return true;
@@ -89,14 +89,28 @@ bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island
 		if (m_islandGraph[*it].name == name)
 		{
 			island = *it;
-			vertexDict[name] = island;
+			m_vertexDict[name] = island;
 			return true;
 		}
 	}
 	return false;
 }
 
-void Archipelago::Visit(VehicleBase& vehicle)
+bool Archipelago::FindIslandNameByHandle(IslandHandle island, std::string& name) const
+{
+	// scan key value pair for match
+	for ( auto kv : m_vertexDict )
+	{
+		if (kv.second == island)
+		{
+			name = kv.first;
+			return true;
+		}
+	}
+	return false;
+}
+
+void Archipelago::Visit(VehicleBase& vehicle) const
 {
 	// get the property map for vertex indices
 	typedef property_map<Graph, vertex_index_t>::type IndexMap;

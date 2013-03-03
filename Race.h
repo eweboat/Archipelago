@@ -11,6 +11,7 @@ class Race
 {
 public:
 	Race(const Archipelago& archipelago_, IslandHandle start, IslandHandle finish);
+	~Race();
 	void AddVehicle(const std::string& type);
 	void StartRace();
 	void Tick();
@@ -27,4 +28,6 @@ private:
 	IslandHandle				m_start;
 	IslandHandle				m_finish;
 	std::vector<VehicleBase*>	m_vehicles;
+	unsigned int				m_raceStep;
+	bool						m_isFinished;
 };

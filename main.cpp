@@ -3,6 +3,7 @@
 #include "Race.h"
 #include "GraphTypes.h"
 
+// these data could be loaded from file but didn't have time to do so
 const static std::string islandDataFile = "islands.dat";
 const static std::string linkDataFile = "links.dat";
 const static std::string raceDataStart = "A";
@@ -33,9 +34,10 @@ int main(int,char*[])
 		race.StartRace();
 		while ( !race.IsFinished() )
 		{
-			race.Tick();
 			race.PrintStatus();
+			race.Tick();
 		}
+		race.PrintStatus();
 	}
 	catch (std::runtime_error& error)
 	{
