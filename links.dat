@@ -1,16 +1,16 @@
-A B
-A D
-B C
-C F
-D E
-E F
-E H
-F I
-H J
-H K
-I K
-I M
-J L
-K M
-L M
-L N
+A:B:weak
+A:D:strong
+B:C:weak
+C:F:weak
+D:E:weak
+E:F:weak
+E:H:near
+F:I:near
+H:J:strong
+H:K:strong
+I:K:weak
+I:M:strong
+J:L:strong
+K:M:weak
+L:M:strong
+L:N:weak

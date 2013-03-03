@@ -28,17 +28,30 @@ namespace Evi
 	const static std::string grassyTerrainString = "grassy";
 	const static std::string mountainousTerrainString = "mountainous";
 	const static std::string swampyTerrainString = "swampy";
+	const static std::string strongLinkString = "strong";
+	const static std::string weakLinkString = "weak";
+	const static std::string nearLinkString = "near";
 	const static std::string islandDataFile = "islands.dat";
+	const static std::string linkDataFile = "links.dat";
 
+	typedef unsigned int VertexHandle;
 
-	struct IslandPropertySet
+	struct IslandProperties
 	{
 		std::string		name;
 		TerrainType		terrain;
 	};
-	struct Link
+	struct LinkProperties
 	{
 		LinkType		linkType;
+	};	
+	struct LinkData
+	{
+		std::string		nodeNameA;
+		std::string		nodeNameB;
+		VertexHandle	resolvedNodeA;
+		VertexHandle	resolvedNodeB;
+		LinkProperties	properties;
 	};	
 	struct RaceProperties
 	{
@@ -46,17 +59,23 @@ namespace Evi
 		int	finishNode;
 	};	
 
-	// for a data string extract node data values
-	// throws if cannot execute
-	IslandPropertySet ExtractData(const std::string& data)
+	std::vector<std::string> TokeniseString(const std::string& data)
 	{
-		// split data line into token
 		std::vector<std::string> tokens;
 		boost::tokenizer<> tokenizer(data);
 		for(boost::tokenizer<>::iterator it=tokenizer.begin(); it != tokenizer.end(); ++it)
 		{
 			tokens.push_back(*it);
 		}
+		return tokens;
+	}
+
+	// for a data string extract node data values
+	// throws if cannot execute
+	IslandProperties ExtractIslandData(const std::string& data)
+	{
+		// split data line into token
+		std::vector<std::string> tokens = TokeniseString(data);
 		// fail if cannot extract correct number of tokens
 		if (tokens.size() != 2)
 		{
@@ -64,7 +83,7 @@ namespace Evi
 		}
 
 		// extract data to node
-		IslandPropertySet node;
+		IslandProperties node;
 		node.name = tokens.at(0);
 		std::string terrainTypeString(tokens.at(1));
 		// perform lower case string comparision to map terrain type to enum
@@ -90,14 +109,52 @@ namespace Evi
 		return node;
 	}
 
-	typedef adjacency_list<vecS, vecS, undirectedS, IslandPropertySet, Link, RaceProperties> Graph;
+	LinkData ExtractLinkData(const std::string& data)
+	{
+		// split data line into token
+		std::vector<std::string> tokens = TokeniseString(data);
+		// fail if cannot extract correct number of tokens
+		if (tokens.size() != 3)
+		{
+			throw std::runtime_error("invalid data size: " + data + "\n");
+		}
+
+		// extract data to node
+		LinkData link;
+		link.nodeNameA = tokens.at(0);
+		link.nodeNameB = tokens.at(1);
+		std::string linkType(tokens.at(2));
+		// perform lower case string comparision to map terrain type to enum
+		std::transform(linkType.begin(), linkType.end(), linkType.begin(), ::tolower);
+		if (linkType == strongLinkString)
+		{
+			link.properties.linkType = LinkType::Strong;
+		}
+		else if (linkType == weakLinkString)
+		{
+			link.properties.linkType = LinkType::Weak;
+		}
+		else if (linkType == nearLinkString)
+		{
+			link.properties.linkType = LinkType::Near;
+		}
+		else
+		{
+			throw std::runtime_error("invalid link type: " + linkType + "\n");
+		}
+
+		std::cout << "node A name = " << link.nodeNameA << ", node B name = " << link.nodeNameB << " link = " << linkType << "\n";
+		return link;
+	}
+
+	typedef adjacency_list<vecS, vecS, undirectedS, IslandProperties, LinkProperties, RaceProperties> Graph;
 	typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
 	typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
 	class Archipelago
 	{
 	public:
-		bool FindIslandByName(const std::string& name, unsigned int& vertexHandle);
+		bool FindIslandByName(const std::string& name, VertexHandle& island);
 
 		void MakeGraph();
 		void PrintVertexAndEdgeData();
@@ -107,6 +164,7 @@ namespace Evi
 	private:
 		void ReadVertiesFromFile();
 		void ReadEdgesFromFile();
+		std::map<std::string, VertexHandle> vertexDict;
 		Graph g;
 	};
 }
@@ -122,6 +180,7 @@ void Evi::Archipelago::ReadVertiesFromFile()
 	// read from file if present
 	try
 	{
+		// consume island data file
 		std::ifstream is(islandDataFile);
 		if (is.good())
 		{
@@ -129,9 +188,8 @@ void Evi::Archipelago::ReadVertiesFromFile()
 			std::istream_iterator<std::string> start(is), end;
 			std::vector<std::string> islandDataStrings = std::vector<std::string>(start, end);
 			// extact data to property set
-			std::vector<IslandPropertySet> islandNodes(islandDataStrings.size());
-			auto nodeDataIter = islandDataStrings.begin();
-			std::transform (islandDataStrings.begin(), islandDataStrings.end(), islandNodes.begin(), ExtractData);
+			std::vector<IslandProperties> islandNodes(islandDataStrings.size());
+			std::transform (islandDataStrings.begin(), islandDataStrings.end(), islandNodes.begin(), ExtractIslandData);
 			// insert data into graph
 			for ( auto island : islandNodes )
 			{
@@ -139,18 +197,37 @@ void Evi::Archipelago::ReadVertiesFromFile()
 				g[u].name = island.name;
 				g[u].terrain = island.terrain;
 			}
+		}
 
+		is = std::ifstream(linkDataFile);
+		if (is.good())
+		{
+			// digest file
+			std::istream_iterator<std::string> start(is), end;
+			std::vector<std::string> linkDataStrings = std::vector<std::string>(start, end);
+			// extact data to property set
+			std::vector<LinkData> linkData(linkDataStrings.size());
+			std::transform (linkDataStrings.begin(), linkDataStrings.end(), linkData.begin(), ExtractLinkData);
+			// insert data into graph
+			for ( auto link : linkData )
+			{
+				unsigned int searchResultA;
+				unsigned int searchResultB;
+				if (FindIslandByName(link.nodeNameA, searchResultA) && FindIslandByName(link.nodeNameB, searchResultB))
+				{
+					link.resolvedNodeA = searchResultA;
+					link.resolvedNodeB = searchResultB;
+				}
+				else
+				{
+					throw std::runtime_error("Error: could not find one of " + link.nodeNameA + " or " + link.nodeNameB + "in island nodes\n");
+				}
+			}
 		}
 	}
 	catch (std::runtime_error& error)
 	{
 		throw std::runtime_error(error.what() + std::string("Error in file: ") + islandDataFile + "\n");
-	}
-
-	unsigned int searchResult;
-	if (FindIslandByName("A", searchResult))
-	{
-		std::cout <<"Found it: " << g[searchResult].name << "\n";
 	}
 }
 
@@ -165,37 +242,30 @@ void Evi::Archipelago::ReadEdgesFromFile()
 	//g[e].linkType = LinkType::Strong;
 }
 
-
-
-
-//bool IsTrue(const graph_traits<Evi::Graph>::vertex_iterator&)
-//{
-//	return true;
-//}
-
-bool Evi::Archipelago::FindIslandByName(const std::string& name, unsigned int& vertexHandle)
+bool Evi::Archipelago::FindIslandByName(const std::string& name, VertexHandle& island)
 {
-	// TODO: Come back and clean up ... maybe use find_if
+	// search class dict for mapping
+	auto searchResult = vertexDict.find(name);
+	if (searchResult != vertexDict.end())
+	{
+		island = searchResult->second;
+		return true;
+	}
+
+	// if key not in dict then find through search
 	// get the property map for vertex indices
-	typedef property_map<Graph, vertex_index_t>::type IndexMap;
-	IndexMap index = get(vertex_index, g);
-	
 	graph_traits<Graph>::vertex_iterator it, end;
 	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
 	{
-		std::cout << "looking for \"" << name << "\" found \"" << g[*it].name << "\"\n";
 		if (g[*it].name == name)
 		{
-			vertexHandle = *it;
+			island = *it;
+			vertexDict[name] = island;
 			return true;
 		}
 
 	}
 	return false;
-
-	//vp = vertices(g);
-	//auto findResult = std::find_if (vp.first, vp.second, IsTrue);
-	//std::cout << std::endl;
 }
 
 void Evi::Archipelago::PrintVertexAndEdgeData()
