@@ -1,7 +1,6 @@
 #include "VehicleBase.h"
 #include <random>
 #include <chrono>
-#include "TraversalRules.h"
 
 void VehicleBase::Reset(IslandHandle location, IslandHandle target)
 {
