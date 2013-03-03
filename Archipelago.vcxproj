@@ -78,6 +78,7 @@
     <ClInclude Include="IslandBase.h" />
     <ClInclude Include="LinkBase.h" />
     <ClInclude Include="Race.h" />
+    <ClInclude Include="TraversalRules.h" />
     <ClInclude Include="VehicleBase.h" />
     <ClInclude Include="VehicleBuilder.h" />
     <ClInclude Include="WheeledVehicle.h" />

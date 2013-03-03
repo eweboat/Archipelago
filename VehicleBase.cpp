@@ -1,21 +1,18 @@
 #include "VehicleBase.h"
 #include <random>
 #include <chrono>
+#include "TraversalRules.h"
 
 void VehicleBase::Reset(IslandHandle location, IslandHandle target)
 {
 	m_currentIsland = location;
 	m_targetIsland = target;
+	m_missNextMove = false;
 }
 
 IslandHandle VehicleBase::GetIsland() const
 {
 	return m_currentIsland;
-}
-
-bool IsRouteValid(const VehicleBase&, const RaceLegProperties&)
-{
-	return true;
 }
 
 void VehicleBase::ChooseNextIsland(const std::vector<RaceLegProperties>& routeData) 
@@ -25,12 +22,17 @@ void VehicleBase::ChooseNextIsland(const std::vector<RaceLegProperties>& routeDa
 	{
 		throw std::runtime_error("No route data available");
 	}
+	if (m_missNextMove)
+	{
+		m_missNextMove = false;
+		return;
+	}
 
 	// check validity of each route
 	std::vector<RaceLegProperties> validRoutes;
 	for (auto route : routeData)
 	{
-		bool isRouteValid = IsRouteValid(*this, route);
+		bool isRouteValid = IsRouteValid(route);
 		if (isRouteValid)
 		{
 			// if finish line is reachable then it will be chosen
@@ -50,9 +52,44 @@ void VehicleBase::ChooseNextIsland(const std::vector<RaceLegProperties>& routeDa
 	}
 
 	// move to island secect at random from list of available options
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
 	std::default_random_engine generator(seed);
 	std::uniform_int_distribution<unsigned int> distribution(0, validRoutes.size()-1);
 	unsigned int randomValidRouteIndex = distribution(generator);
 	m_currentIsland = validRoutes.at(randomValidRouteIndex).targetNode; 
+
+	// apply any penalties from route choice
+	ApplyMovementPenalties(validRoutes.at(randomValidRouteIndex));
+}
+
+bool WalkingVehicle::IsRouteValidImpl(const RaceLegProperties& route) const
+{
+	bool isValid = true;
+	isValid = isValid && route.linkType != LinkType::Near;
+	isValid = isValid && route.linkType != LinkType::Weak;
+	isValid = isValid && route.terrain != TerrainType::Mountain;
+	return isValid;
+}
+
+bool DrivingVehicle::IsRouteValidImpl(const RaceLegProperties& route) const
+{
+	bool isValid = true;
+	isValid = isValid && route.linkType != LinkType::Near;
+	isValid = isValid && route.terrain != TerrainType::Swamp;
+	return isValid;
+}
+
+bool FlyingVehicle::IsRouteValidImpl(const RaceLegProperties& route) const
+{
+	bool isValid = true;
+	isValid = isValid && route.terrain != TerrainType::Mountain;
+	return isValid;
+}
+
+void FlyingVehicle::ApplyMovementPenaltiesImpl(const RaceLegProperties& route)
+{
+	if (route.terrain == TerrainType::Swamp)
+	{
+		SkipNextMove();
+	}
 }
