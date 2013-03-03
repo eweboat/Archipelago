@@ -1,4 +1,7 @@
 #include "Factory.h"
+#include <iostream>
+#include <algorithm>
+#include <boost\tokenizer.hpp>
 
 std::vector<std::string> TokeniseString(const std::string& data)
 {
@@ -88,6 +91,4 @@ LinkData ExtractLinkData(const std::string& data)
 	std::cout << "node A name = " << link.nodeNameA << ", node B name = " << link.nodeNameB << " link = " << linkType << "\n";
 	return link;
 }
-
-
 

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 
 
 #include <boost/config.hpp>
@@ -13,7 +13,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <regex>
-#include <string>
 #include <boost\tokenizer.hpp>
 #include <boost\bind.hpp>
 
@@ -30,24 +29,23 @@ typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
 typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
 // functions that need a home ...
-std::vector<std::string> TokeniseString(const std::string& data);
-LinkData ExtractLinkData(const std::string& data);
-IslandProperties ExtractIslandData(const std::string& data);
+//std::vector<std::string> TokeniseString(const std::string& data);
+//LinkData ExtractLinkData(const std::string& data);
+//IslandProperties ExtractIslandData(const std::string& data);
 
 class Archipelago
 {
 public:
-	bool FindIslandByName(const std::string& name, VertexHandle& island);
+	Archipelago(const std::string& islandFile, const std::string& linkFile);
+	bool FindIslandByName(const std::string& name, IslandHandle& island);
 
-	void MakeGraph();
-	void PrintVertexAndEdgeData();
-	void PrintOutgoingEdges();
-	void StackOverflow();
+	void Visit(const class VehicleBase& vehicle);
+
+	void PrintVertexAndEdgeData() const;
+	void PrintOutgoingEdges() const;
 		
 private:
-	void ReadVertiesFromFile();
-	void ReadEdgesFromFile();
-	std::map<std::string, VertexHandle> vertexDict;
+	std::map<std::string, IslandHandle> vertexDict;
 	Graph g;
 };
 

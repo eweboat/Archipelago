@@ -67,6 +67,8 @@
     <ClCompile Include="Factory.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Race.cpp" />
+    <ClCompile Include="Vechicle.cpp" />
+    <ClCompile Include="VehicleBuilder.cpp" />
     <ClCompile Include="WheeledVehicle.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +79,7 @@
     <ClInclude Include="LinkBase.h" />
     <ClInclude Include="Race.h" />
     <ClInclude Include="VehicleBase.h" />
+    <ClInclude Include="VehicleBuilder.h" />
     <ClInclude Include="WheeledVehicle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -37,7 +37,7 @@ namespace Evi
 	const static std::string islandDataFile = "islands.dat";
 	const static std::string linkDataFile = "links.dat";
 
-	typedef unsigned int VertexHandle;
+	typedef unsigned int IslandHandle;
 
 	struct IslandProperties
 	{
@@ -52,8 +52,8 @@ namespace Evi
 	{
 		std::string		nodeNameA;
 		std::string		nodeNameB;
-		VertexHandle	resolvedNodeA;
-		VertexHandle	resolvedNodeB;
+		IslandHandle	resolvedNodeA;
+		IslandHandle	resolvedNodeB;
 		LinkProperties	properties;
 	};	
 	struct RaceProperties
@@ -157,7 +157,7 @@ namespace Evi
 	class Archipelago2
 	{
 	public:
-		bool FindIslandByName(const std::string& name, VertexHandle& island);
+		bool FindIslandByName(const std::string& name, IslandHandle& island);
 
 		void MakeGraph();
 		void PrintVertexAndEdgeData();
@@ -167,7 +167,7 @@ namespace Evi
 	private:
 		void ReadVertiesFromFile();
 		void ReadEdgesFromFile();
-		std::map<std::string, VertexHandle> vertexDict;
+		std::map<std::string, IslandHandle> vertexDict;
 		Graph g;
 	};
 }
@@ -254,7 +254,7 @@ void Evi::Archipelago2::ReadEdgesFromFile()
 	//g[e].linkType = LinkType::Strong;
 }
 
-bool Evi::Archipelago2::FindIslandByName(const std::string& name, VertexHandle& island)
+bool Evi::Archipelago2::FindIslandByName(const std::string& name, IslandHandle& island)
 {
 	// search class dict for mapping
 	auto searchResult = vertexDict.find(name);

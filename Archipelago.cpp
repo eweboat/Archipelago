@@ -1,19 +1,17 @@
 #include "Archipelago.h"
+#include "Factory.h"
+#include <string>
 
+#include "VehicleBase.h"
 
-void Archipelago::MakeGraph()
-{
-	ReadVertiesFromFile();
-	ReadEdgesFromFile();
-}
-
-void Archipelago::ReadVertiesFromFile()
+Archipelago::Archipelago(const std::string& islandFile, const std::string& linkFile)
 {
 	// read from file if present
+	std::string currentFileRead = islandFile;
 	try
 	{
 		// consume island data file
-		std::ifstream is(islandDataFile);
+		std::ifstream is(islandFile);
 		if (is.good())
 		{
 			// digest file
@@ -31,7 +29,8 @@ void Archipelago::ReadVertiesFromFile()
 			}
 		}
 
-		is = std::ifstream(linkDataFile);
+		currentFileRead = linkFile;
+		is = std::ifstream(linkFile);
 		if (is.good())
 		{
 			// digest file
@@ -68,22 +67,11 @@ void Archipelago::ReadVertiesFromFile()
 	}
 	catch (std::runtime_error& error)
 	{
-		throw std::runtime_error(error.what() + std::string("Error in file: ") + islandDataFile + "\n");
+		throw std::runtime_error(error.what() + std::string("Error in file: ") + currentFileRead + "\n");
 	}
 }
 
-void Archipelago::ReadEdgesFromFile()
-{
-	// Create an edge conecting those two vertices
-	//edge_t e; bool b;
-	//boost::tie(e,b) = boost::add_edge(u,v,g);
-	//boost::tie(e,b) = boost::add_edge(u,v,g);
-
-	//// Set the properties of a vertex and the edge
-	//g[e].linkType = LinkType::Strong;
-}
-
-bool Archipelago::FindIslandByName(const std::string& name, VertexHandle& island)
+bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island)
 {
 	// search class dict for mapping
 	auto searchResult = vertexDict.find(name);
@@ -108,7 +96,7 @@ bool Archipelago::FindIslandByName(const std::string& name, VertexHandle& island
 	return false;
 }
 
-void Archipelago::PrintVertexAndEdgeData()
+void Archipelago::PrintVertexAndEdgeData() const
 {
 	std::cout << "vertices(g) = ";
 	graph_traits<Graph>::vertex_iterator it, end;
@@ -136,7 +124,7 @@ void Archipelago::PrintVertexAndEdgeData()
 	std::cout << std::endl;
 }
 
-void Archipelago::PrintOutgoingEdges()
+void Archipelago::PrintOutgoingEdges() const
 {
 	//// Write out the outgoing edges
 	//std::cout << "\tout-edges: ";
@@ -152,6 +140,8 @@ void Archipelago::PrintOutgoingEdges()
 	//std::cout << std::endl;
 }
 
-
+void Archipelago::Visit(const VehicleBase& vehicle)
+{
+}
 
 
