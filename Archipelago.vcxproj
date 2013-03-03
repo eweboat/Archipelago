@@ -62,12 +62,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Archipelago.cpp" />
+    <ClCompile Include="CodeBin.cpp" />
+    <ClCompile Include="Factory.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Race.cpp" />
     <ClCompile Include="WheeledVehicle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Archipelago.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="GraphTypes.h" />
     <ClInclude Include="IslandBase.h" />
     <ClInclude Include="LinkBase.h" />
     <ClInclude Include="Race.h" />
