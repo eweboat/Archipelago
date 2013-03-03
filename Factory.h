@@ -15,6 +15,9 @@
 #include <boost\tokenizer.hpp>
 #include <boost\bind.hpp>
 
+
+#include <boost\lexical_cast.hpp>
+
 using namespace boost;
 using namespace std;
 
@@ -222,6 +225,15 @@ void Evi::Archipelago::ReadVertiesFromFile()
 				{
 					throw std::runtime_error("Error: could not find one of " + link.nodeNameA + " or " + link.nodeNameB + "in island nodes\n");
 				}
+
+				// Create an edge conecting those two vertices
+				edge_t e; bool b;
+				Graph::vertex_descriptor u = *vertices(g).first + link.resolvedNodeA;
+				Graph::vertex_descriptor v = *vertices(g).first + link.resolvedNodeB;
+				boost::tie(e,b) = boost::add_edge(u,v,g);
+
+				// Set the properties of a vertex and the edge
+				g[e].linkType = link.properties.linkType;
 			}
 		}
 	}
@@ -263,39 +275,34 @@ bool Evi::Archipelago::FindIslandByName(const std::string& name, VertexHandle& i
 			vertexDict[name] = island;
 			return true;
 		}
-
 	}
 	return false;
 }
 
 void Evi::Archipelago::PrintVertexAndEdgeData()
 {
-	// get the property map for vertex indices
-	typedef property_map<Graph, vertex_index_t>::type IndexMap;
-	IndexMap index = get(vertex_index, g);
-
-	int i = 0;
 	std::cout << "vertices(g) = ";
 	graph_traits<Graph>::vertex_iterator it, end;
 	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
 	{
-		std::cout << index[*it] <<  " ";
-
-		Graph::vertex_descriptor v = *vertices(g).first;
-		std::cout << g[v+i++].name << " ";
+		std::string terrainString = (g[*it].terrain == TerrainType::Grassy) ? "grassy" : "mountain";
+		terrainString = g[*it].terrain == TerrainType::Swamp ? "swamp" : terrainString;
+		std::cout << g[*it].name << ":" << terrainString << " ";
 	}
 
-
-
-	i = 0;
 	std::cout << "edges(g) = ";
+	// get the property map for vertex indices
+	typedef property_map<Graph, vertex_index_t>::type IndexMap;
+	IndexMap index = get(vertex_index, g);
 	graph_traits<Graph>::edge_iterator ei, ei_end;
+
 	for (boost::tie(ei, ei_end) = boost::edges(g); ei != ei_end; ++ei)
 	{
+		// TODO :: this gives me access to a nodes links !! :)
+		auto foo = g.out_edge_list(0);
+		g.m_edges;
+		//std::string foo = g.m_edges[source(*ei, g)] == LinkType::Strong ? "strong" : "poo";
 		std::cout << "(" << index[source(*ei, g)]  << "," << index[target(*ei, g)] << ") ";
-			
-		//Graph::edge_descriptor e = *edges(g).first;
-		//std::cout << g[e].custom << " ";
 	}
 	std::cout << std::endl;
 }
