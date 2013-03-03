@@ -13,7 +13,6 @@ int main(int,char*[])
 	try
 	{
 		Archipelago archi(islandDataFile, linkDataFile);
-		//archi.PrintVertexAndEdgeData();
 
 		// translate start and finish island names to handles
 		IslandHandle startIsland, finishIsland;
@@ -29,6 +28,7 @@ int main(int,char*[])
 		// create race
 		Race race(archi, startIsland, finishIsland);
 
+		// todo data input
 		race.AddVehicle("wheels");
 		race.StartRace();
 		while ( !race.IsFinished() )

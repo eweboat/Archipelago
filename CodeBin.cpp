@@ -168,7 +168,7 @@ namespace Evi
 		void ReadVertiesFromFile();
 		void ReadEdgesFromFile();
 		std::map<std::string, IslandHandle> vertexDict;
-		Graph g;
+		Graph m_islandGraph;
 	};
 }
 
@@ -196,9 +196,9 @@ void Evi::Archipelago2::ReadVertiesFromFile()
 			// insert data into graph
 			for ( auto island : islandNodes )
 			{
-				vertex_t u = boost::add_vertex(g);
-				g[u].name = island.name;
-				g[u].terrain = island.terrain;
+				vertex_t u = boost::add_vertex(m_islandGraph);
+				m_islandGraph[u].name = island.name;
+				m_islandGraph[u].terrain = island.terrain;
 			}
 		}
 
@@ -228,12 +228,12 @@ void Evi::Archipelago2::ReadVertiesFromFile()
 
 				// Create an edge conecting those two vertices
 				edge_t e; bool b;
-				Graph::vertex_descriptor u = *vertices(g).first + link.resolvedNodeA;
-				Graph::vertex_descriptor v = *vertices(g).first + link.resolvedNodeB;
-				boost::tie(e,b) = boost::add_edge(u,v,g);
+				Graph::vertex_descriptor u = *vertices(m_islandGraph).first + link.resolvedNodeA;
+				Graph::vertex_descriptor v = *vertices(m_islandGraph).first + link.resolvedNodeB;
+				boost::tie(e,b) = boost::add_edge(u,v,m_islandGraph);
 
 				// Set the properties of a vertex and the edge
-				g[e].linkType = link.properties.linkType;
+				m_islandGraph[e].linkType = link.properties.linkType;
 			}
 		}
 	}
@@ -247,11 +247,11 @@ void Evi::Archipelago2::ReadEdgesFromFile()
 {
 	// Create an edge conecting those two vertices
 	//edge_t e; bool b;
-	//boost::tie(e,b) = boost::add_edge(u,v,g);
-	//boost::tie(e,b) = boost::add_edge(u,v,g);
+	//boost::tie(e,b) = boost::add_edge(u,v,m_islandGraph);
+	//boost::tie(e,b) = boost::add_edge(u,v,m_islandGraph);
 
 	//// Set the properties of a vertex and the edge
-	//g[e].linkType = LinkType::Strong;
+	//m_islandGraph[e].linkType = LinkType::Strong;
 }
 
 bool Evi::Archipelago2::FindIslandByName(const std::string& name, IslandHandle& island)
@@ -267,9 +267,9 @@ bool Evi::Archipelago2::FindIslandByName(const std::string& name, IslandHandle& 
 	// if key not in dict then find through search
 	// get the property map for vertex indices
 	graph_traits<Graph>::vertex_iterator it, end;
-	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
+	for (boost::tie( it, end ) = vertices(m_islandGraph); it != end; ++it)
 	{
-		if (g[*it].name == name)
+		if (m_islandGraph[*it].name == name)
 		{
 			island = *it;
 			vertexDict[name] = island;
@@ -281,28 +281,28 @@ bool Evi::Archipelago2::FindIslandByName(const std::string& name, IslandHandle& 
 
 void Evi::Archipelago2::PrintVertexAndEdgeData()
 {
-	std::cout << "vertices(g) = ";
+	std::cout << "vertices(m_islandGraph) = ";
 	graph_traits<Graph>::vertex_iterator it, end;
-	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
+	for (boost::tie( it, end ) = vertices(m_islandGraph); it != end; ++it)
 	{
-		std::string terrainString = (g[*it].terrain == TerrainType::Grassy) ? "grassy" : "mountain";
-		terrainString = g[*it].terrain == TerrainType::Swamp ? "swamp" : terrainString;
-		std::cout << g[*it].name << ":" << terrainString << " ";
+		std::string terrainString = (m_islandGraph[*it].terrain == TerrainType::Grassy) ? "grassy" : "mountain";
+		terrainString = m_islandGraph[*it].terrain == TerrainType::Swamp ? "swamp" : terrainString;
+		std::cout << m_islandGraph[*it].name << ":" << terrainString << " ";
 	}
 
-	std::cout << "edges(g) = ";
+	std::cout << "edges(m_islandGraph) = ";
 	// get the property map for vertex indices
 	typedef property_map<Graph, vertex_index_t>::type IndexMap;
-	IndexMap index = get(vertex_index, g);
+	IndexMap index = get(vertex_index, m_islandGraph);
 	graph_traits<Graph>::edge_iterator ei, ei_end;
 
-	for (boost::tie(ei, ei_end) = boost::edges(g); ei != ei_end; ++ei)
+	for (boost::tie(ei, ei_end) = boost::edges(m_islandGraph); ei != ei_end; ++ei)
 	{
 		// TODO :: this gives me access to a nodes links !! :)
-		auto foo = g.out_edge_list(0);
-		g.m_edges;
-		//std::string foo = g.m_edges[source(*ei, g)] == LinkType::Strong ? "strong" : "poo";
-		std::cout << "(" << index[source(*ei, g)]  << "," << index[target(*ei, g)] << ") ";
+		auto foo = m_islandGraph.out_edge_list(0);
+		m_islandGraph.m_edges;
+		//std::string foo = m_islandGraph.m_edges[source(*ei, m_islandGraph)] == LinkType::Strong ? "strong" : "poo";
+		std::cout << "(" << index[source(*ei, m_islandGraph)]  << "," << index[target(*ei, m_islandGraph)] << ") ";
 	}
 	std::cout << std::endl;
 }
@@ -313,11 +313,11 @@ void Evi::Archipelago2::PrintOutgoingEdges()
 	//std::cout << "\tout-edges: ";
 	//typename graph_traits<Graph>::out_edge_iterator out_i, out_end;
 	//typename graph_traits<Graph>::edge_descriptor e;
-	//for (boost::tie(out_i, out_end) = out_edges(v, g); 
+	//for (boost::tie(out_i, out_end) = out_edges(v, m_islandGraph); 
 	//out_i != out_end; ++out_i)
 	//{
 	//	e = *out_i;
-	//	Vertex src = source(e, g), targ = target(e, g);
+	//	Vertex src = source(e, m_islandGraph), targ = target(e, m_islandGraph);
 	//	std::cout << "(" << get(vertex_id, src) << "," << get(vertex_id, targ) << ") ";
 	//}
 	//std::cout << std::endl;
@@ -341,20 +341,20 @@ void Evi::Archipelago2::StackOverflow()
 	typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
 	//Instanciate a graph
-	Graph g;
+	Graph m_islandGraph;
 
 	// Create two vertices in that graph
-	vertex_t u = boost::add_vertex(g);
-	vertex_t v = boost::add_vertex(g);
+	vertex_t u = boost::add_vertex(m_islandGraph);
+	vertex_t v = boost::add_vertex(m_islandGraph);
 
 	// Create an edge conecting those two vertices
 	edge_t e; bool b;
-	boost::tie(e,b) = boost::add_edge(u,v,g);
+	boost::tie(e,b) = boost::add_edge(u,v,m_islandGraph);
 
 
 	// Set the properties of a vertex and the edge
-	g[u].foo = 42;
-	g[e].blah = "Hello world";
+	m_islandGraph[u].foo = 42;
+	m_islandGraph[e].blah = "Hello world";
 }
 
 
@@ -391,22 +391,22 @@ void LegacyShit()
 	edges.push_back( Edge(L, M) );
 	edges.push_back( Edge(L, N) );
 
-	g = Graph(edges.begin(), edges.end(), num_vertices);
+	m_islandGraph = Graph(edges.begin(), edges.end(), num_vertices);
 	
 
-	//typename property_map<Graph, vertex_index_t>::type vertex_id = get(vertex_index, g);
+	//typename property_map<Graph, vertex_index_t>::type vertex_id = get(vertex_index, m_islandGraph);
 
-	g[0].name = "vertex 0" ;
-	g[1].name = "vertex 1" ;
-	g[2].name = "vertex 2" ;
-	g[3].name = "vertex 3" ;
+	m_islandGraph[0].name = "vertex 0" ;
+	m_islandGraph[1].name = "vertex 1" ;
+	m_islandGraph[2].name = "vertex 2" ;
+	m_islandGraph[3].name = "vertex 3" ;
 
-	Graph::edge_descriptor e = *boost::edges(g).first;
+	Graph::edge_descriptor e = *boost::edges(m_islandGraph).first;
 	//Graph::edge_bundled foo;
-	g[e].custom = "edge 0";
+	m_islandGraph[e].custom = "edge 0";
 
-	Graph::vertex_descriptor v = *vertices(g).first;
-	std::cout << ":" << g[1].name << ":" ;
+	Graph::vertex_descriptor v = *vertices(m_islandGraph).first;
+	std::cout << ":" << m_islandGraph[1].name << ":" ;
 	*/
 }
 
@@ -431,24 +431,24 @@ void LegacyShit()
 using namespace boost;
 /*
 template <class Graph> struct exercise_vertex {
-  exercise_vertex(Graph& g_) : g(g_) { }
+  exercise_vertex(Graph& g_) : m_islandGraph(g_) { }
   typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
   void operator()(const Vertex& v) const
   {
     using namespace boost;
     typename property_map<Graph, vertex_index_t>::type 
-      vertex_id = get(vertex_index, g);
+      vertex_id = get(vertex_index, m_islandGraph);
     std::cout << "vertex: " << get(vertex_id, v) << std::endl;
 
     // Write out the outgoing edges
     std::cout << "\tout-edges: ";
     typename graph_traits<Graph>::out_edge_iterator out_i, out_end;
     typename graph_traits<Graph>::edge_descriptor e;
-    for (boost::tie(out_i, out_end) = out_edges(v, g); 
+    for (boost::tie(out_i, out_end) = out_edges(v, m_islandGraph); 
          out_i != out_end; ++out_i)
     {
       e = *out_i;
-      Vertex src = source(e, g), targ = target(e, g);
+      Vertex src = source(e, m_islandGraph), targ = target(e, m_islandGraph);
       std::cout << "(" << get(vertex_id, src)
                 << "," << get(vertex_id, targ) << ") ";
     }
@@ -457,10 +457,10 @@ template <class Graph> struct exercise_vertex {
     // Write out the incoming edges    
     std::cout << "\tin-edges: ";
     typename graph_traits<Graph>::in_edge_iterator in_i, in_end;
-    for (boost::tie(in_i, in_end) = in_edges(v, g); in_i != in_end; ++in_i)
+    for (boost::tie(in_i, in_end) = in_edges(v, m_islandGraph); in_i != in_end; ++in_i)
     {
       e = *in_i;
-      Vertex src = source(e, g), targ = target(e, g);
+      Vertex src = source(e, m_islandGraph), targ = target(e, m_islandGraph);
       std::cout << "(" << get(vertex_id, src)
                 << "," << get(vertex_id, targ) << ") ";
     }
@@ -469,11 +469,11 @@ template <class Graph> struct exercise_vertex {
     // Write out all adjacent vertices    
     std::cout << "\tadjacent vertices: ";
     typename graph_traits<Graph>::adjacency_iterator ai, ai_end;
-    for (boost::tie(ai,ai_end) = adjacent_vertices(v, g);  ai != ai_end; ++ai)
+    for (boost::tie(ai,ai_end) = adjacent_vertices(v, m_islandGraph);  ai != ai_end; ++ai)
       std::cout << get(vertex_id, *ai) <<  " ";
     std::cout << std::endl;
   }
-  Graph& g;
+  Graph& m_islandGraph;
 };
 */
 int foomain(int,char*[])
@@ -500,39 +500,39 @@ int foomain(int,char*[])
   // declare a graph object, adding the edges and edge properties
 #if defined(BOOST_MSVC) && BOOST_MSVC <= 1300
   // VC++ can't handle the iterator constructor
-  Graph g(num_vertices);
-  property_map<Graph, edge_weight_t>::type weightmap = get(edge_weight, g);
+  Graph m_islandGraph(num_vertices);
+  property_map<Graph, edge_weight_t>::type weightmap = get(edge_weight, m_islandGraph);
   for (std::size_t j = 0; j < num_edges; ++j) {
     graph_traits<Graph>::edge_descriptor e; bool inserted;
-    tie(e, inserted) = add_edge(edge_array[j].first, edge_array[j].second, g);
+    tie(e, inserted) = add_edge(edge_array[j].first, edge_array[j].second, m_islandGraph);
     weightmap[e] = transmission_delay[j];
   }
 #else
-  Graph g(edge_array, edge_array + num_edges,
+  Graph m_islandGraph(edge_array, edge_array + num_edges,
           transmission_delay, num_vertices);
 #endif
 
   boost::property_map<Graph, vertex_index_t>::type 
-    vertex_id = get(vertex_index, g);
+    vertex_id = get(vertex_index, m_islandGraph);
   boost::property_map<Graph, edge_weight_t>::type
-    trans_delay = get(edge_weight, g);
+    trans_delay = get(edge_weight, m_islandGraph);
 
-  std::cout << "vertices(g) = ";
+  std::cout << "vertices(m_islandGraph) = ";
   typedef graph_traits<Graph>::vertex_iterator vertex_iter;
   std::pair<vertex_iter, vertex_iter> vp;
-  for (vp = vertices(g); vp.first != vp.second; ++vp.first)
+  for (vp = vertices(m_islandGraph); vp.first != vp.second; ++vp.first)
     std::cout << name[get(vertex_id, *vp.first)] <<  " ";
   std::cout << std::endl;
   
-  std::cout << "edges(g) = ";
+  std::cout << "edges(m_islandGraph) = ";
   graph_traits<Graph>::edge_iterator ei, ei_end;
-  for (boost::tie(ei,ei_end) = edges(g); ei != ei_end; ++ei)
-    std::cout << "(" << name[get(vertex_id, source(*ei, g))]
-              << "," << name[get(vertex_id, target(*ei, g))] << ") ";
+  for (boost::tie(ei,ei_end) = edges(m_islandGraph); ei != ei_end; ++ei)
+    std::cout << "(" << name[get(vertex_id, source(*ei, m_islandGraph))]
+              << "," << name[get(vertex_id, target(*ei, m_islandGraph))] << ") ";
   std::cout << std::endl;
   
-  std::for_each(vertices(g).first, vertices(g).second,
-                exercise_vertex<Graph>(g));
+  std::for_each(vertices(m_islandGraph).first, vertices(m_islandGraph).second,
+                exercise_vertex<Graph>(m_islandGraph));
   
   std::map<std::string,std::string> graph_attr, vertex_attr, edge_attr;
   graph_attr["size"] = "3,3";
@@ -540,7 +540,7 @@ int foomain(int,char*[])
   graph_attr["ratio"] = "fill";
   vertex_attr["shape"] = "circle";
 
-  boost::write_graphviz(std::cout, g, 
+  boost::write_graphviz(std::cout, m_islandGraph, 
                         make_label_writer(name),
                         make_label_writer(trans_delay),
                         make_graph_attributes_writer(graph_attr, vertex_attr, 

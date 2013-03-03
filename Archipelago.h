@@ -28,11 +28,6 @@ typedef adjacency_list<vecS, vecS, undirectedS, IslandProperties, LinkProperties
 typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
 typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
 
-// functions that need a home ...
-//std::vector<std::string> TokeniseString(const std::string& data);
-//LinkData ExtractLinkData(const std::string& data);
-//IslandProperties ExtractIslandData(const std::string& data);
-
 class Archipelago
 {
 public:
@@ -41,12 +36,10 @@ public:
 
 	void Visit(class VehicleBase& vehicle);
 
-	void PrintVertexAndEdgeData() const;
-	void PrintOutgoingEdges() const;
-		
 private:
+	// todo give member variables better names
 	std::map<std::string, IslandHandle> vertexDict;
-	Graph g;
+	Graph m_islandGraph;
 };
 
 

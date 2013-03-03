@@ -33,5 +33,10 @@ struct LinkData
 	IslandHandle	resolvedNodeB;
 	LinkProperties	properties;
 };	
-
+struct RaceLegProperties
+{
+	TerrainType		terrain;
+	LinkType		linkType;
+	IslandHandle	targetNode;
+};
 

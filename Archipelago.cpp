@@ -23,9 +23,9 @@ Archipelago::Archipelago(const std::string& islandFile, const std::string& linkF
 			// insert data into graph
 			for ( auto island : islandNodes )
 			{
-				vertex_t u = boost::add_vertex(g);
-				g[u].name = island.name;
-				g[u].terrain = island.terrain;
+				vertex_t u = boost::add_vertex(m_islandGraph);
+				m_islandGraph[u].name = island.name;
+				m_islandGraph[u].terrain = island.terrain;
 			}
 		}
 
@@ -56,12 +56,12 @@ Archipelago::Archipelago(const std::string& islandFile, const std::string& linkF
 
 				// Create an edge conecting those two vertices
 				edge_t e; bool b;
-				Graph::vertex_descriptor u = *vertices(g).first + link.resolvedNodeA;
-				Graph::vertex_descriptor v = *vertices(g).first + link.resolvedNodeB;
-				boost::tie(e,b) = boost::add_edge(u,v,g);
+				Graph::vertex_descriptor u = *vertices(m_islandGraph).first + link.resolvedNodeA;
+				Graph::vertex_descriptor v = *vertices(m_islandGraph).first + link.resolvedNodeB;
+				boost::tie(e,b) = boost::add_edge(u,v,m_islandGraph);
 
 				// Set the properties of a vertex and the edge
-				g[e].linkType = link.properties.linkType;
+				m_islandGraph[e].linkType = link.properties.linkType;
 			}
 		}
 	}
@@ -84,9 +84,9 @@ bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island
 	// if key not in dict then find through search
 	// get the property map for vertex indices
 	graph_traits<Graph>::vertex_iterator it, end;
-	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
+	for (boost::tie( it, end ) = vertices(m_islandGraph); it != end; ++it)
 	{
-		if (g[*it].name == name)
+		if (m_islandGraph[*it].name == name)
 		{
 			island = *it;
 			vertexDict[name] = island;
@@ -96,53 +96,35 @@ bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island
 	return false;
 }
 
-void Archipelago::PrintVertexAndEdgeData() const
-{
-	std::cout << "vertices(g) = ";
-	graph_traits<Graph>::vertex_iterator it, end;
-	for (boost::tie( it, end ) = vertices(g); it != end; ++it)
-	{
-		std::string terrainString = (g[*it].terrain == TerrainType::Grassy) ? "grassy" : "mountain";
-		terrainString = g[*it].terrain == TerrainType::Swamp ? "swamp" : terrainString;
-		std::cout << g[*it].name << ":" << terrainString << " ";
-	}
-
-	std::cout << "edges(g) = ";
-	// get the property map for vertex indices
-	typedef property_map<Graph, vertex_index_t>::type IndexMap;
-	IndexMap index = get(vertex_index, g);
-	graph_traits<Graph>::edge_iterator ei, ei_end;
-
-	for (boost::tie(ei, ei_end) = boost::edges(g); ei != ei_end; ++ei)
-	{
-		// TODO :: this gives me access to a nodes links !! :)
-		auto foo = g.out_edge_list(0);
-		g.m_edges;
-		//std::string foo = g.m_edges[source(*ei, g)] == LinkType::Strong ? "strong" : "poo";
-		std::cout << "(" << index[source(*ei, g)]  << "," << index[target(*ei, g)] << ") ";
-	}
-	std::cout << std::endl;
-}
-
-void Archipelago::PrintOutgoingEdges() const
-{
-	//// Write out the outgoing edges
-	//std::cout << "\tout-edges: ";
-	//typename graph_traits<Graph>::out_edge_iterator out_i, out_end;
-	//typename graph_traits<Graph>::edge_descriptor e;
-	//for (boost::tie(out_i, out_end) = out_edges(v, g); 
-	//out_i != out_end; ++out_i)
-	//{
-	//	e = *out_i;
-	//	Vertex src = source(e, g), targ = target(e, g);
-	//	std::cout << "(" << get(vertex_id, src) << "," << get(vertex_id, targ) << ") ";
-	//}
-	//std::cout << std::endl;
-}
-
 void Archipelago::Visit(VehicleBase& vehicle)
 {
-	vehicle.ChooseNextIsland();
-}
+	// get the property map for vertex indices
+	typedef property_map<Graph, vertex_index_t>::type IndexMap;
+	IndexMap index = get(vertex_index, m_islandGraph);
+	
+	// for each adjacent node find route data
+	std::vector<RaceLegProperties> availableLinks;
+	auto adjacentEdges = m_islandGraph.out_edge_list(vehicle.GetIsland());
+	for (auto link : adjacentEdges)
+	{
+		// find edge connecting location and adjacent node
+		edge_t edge; bool edgeFound;
+		Graph::vertex_descriptor currentIsland = *vertices(m_islandGraph).first + vehicle.GetIsland();
+		Graph::vertex_descriptor adjacentIsland = *vertices(m_islandGraph).first + link.m_target;
+		boost::tie(edge, edgeFound) = boost::edge(currentIsland, adjacentIsland, m_islandGraph);
+		
+		// copy data route data to be passed to vehicle
+		if ( edgeFound )
+		{
+			RaceLegProperties leg;
+			leg.linkType = m_islandGraph[edge].linkType;
+			leg.targetNode = link.m_target;
+			leg.terrain = m_islandGraph[leg.targetNode].terrain;
+			availableLinks.push_back(leg);
+		}
+	}
 
+	// pass all available routes to vehicle
+	vehicle.ChooseNextIsland(availableLinks);
+}
 
