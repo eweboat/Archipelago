@@ -110,35 +110,43 @@ bool Archipelago::FindIslandNameByHandle(IslandHandle island, std::string& name)
 	return false;
 }
 
+
 void Archipelago::Visit(VehicleBase& vehicle) const
 {
-	// get the property map for vertex indices
-	typedef property_map<Graph, vertex_index_t>::type IndexMap;
-	IndexMap index = get(vertex_index, m_islandGraph);
-	
-	// for each adjacent node find route data
-	std::vector<RaceLegProperties> availableLinks;
-	auto adjacentEdges = m_islandGraph.out_edge_list(vehicle.GetIsland());
-	for (auto link : adjacentEdges)
+	try
 	{
-		// find edge connecting location and adjacent node
-		edge_t edge; bool edgeFound;
-		Graph::vertex_descriptor currentIsland = *vertices(m_islandGraph).first + vehicle.GetIsland();
-		Graph::vertex_descriptor adjacentIsland = *vertices(m_islandGraph).first + link.m_target;
-		boost::tie(edge, edgeFound) = boost::edge(currentIsland, adjacentIsland, m_islandGraph);
-		
-		// copy data route data to be passed to vehicle
-		if ( edgeFound )
+		// get the property map for vertex indices
+		typedef property_map<Graph, vertex_index_t>::type IndexMap;
+		IndexMap index = get(vertex_index, m_islandGraph);
+	
+		// for each adjacent node find route data
+		std::vector<RaceLegProperties> availableLinks;
+		auto adjacentEdges = m_islandGraph.out_edge_list(vehicle.GetIsland());
+		for (auto link : adjacentEdges)
 		{
-			RaceLegProperties leg;
-			leg.linkType = m_islandGraph[edge].linkType;
-			leg.targetNode = link.m_target;
-			leg.terrain = m_islandGraph[leg.targetNode].terrain;
-			availableLinks.push_back(leg);
+			// find edge connecting location and adjacent node
+			edge_t edge; bool edgeFound;
+			Graph::vertex_descriptor currentIsland = *vertices(m_islandGraph).first + vehicle.GetIsland();
+			Graph::vertex_descriptor adjacentIsland = *vertices(m_islandGraph).first + link.m_target;
+			boost::tie(edge, edgeFound) = boost::edge(currentIsland, adjacentIsland, m_islandGraph);
+		
+			// copy data route data to be passed to vehicle
+			if ( edgeFound )
+			{
+				RaceLegProperties leg;
+				leg.linkType = m_islandGraph[edge].linkType;
+				leg.targetNode = link.m_target;
+				leg.terrain = m_islandGraph[leg.targetNode].terrain;
+				availableLinks.push_back(leg);
+			}
 		}
-	}
 
-	// pass all available routes to vehicle
-	vehicle.ChooseNextIsland(availableLinks);
+		// pass all available routes to vehicle
+		vehicle.ChooseNextIsland(availableLinks);
+	}
+	catch (std::exception& error)
+	{
+		std::cerr << vehicle.ToString() << " has a problem: " << error.what() << "\n";
+	}
 }
 

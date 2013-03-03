@@ -9,7 +9,7 @@ class VehicleBase
 public:
 	void Reset(IslandHandle location, IslandHandle target);
 	IslandHandle GetIsland() const;
-	void ChooseNextIsland(const std::vector<RaceLegProperties>&) {m_currentIsland= m_targetIsland; }
+	void ChooseNextIsland(const std::vector<RaceLegProperties>& routeData);
 	std::string ToString() const { return ToStringImpl(); }
 
 private:

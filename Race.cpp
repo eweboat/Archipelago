@@ -78,6 +78,7 @@ bool Race::IsFinished()
 
 void Race::PrintStatus() const
 {
+	// format race data for print to standard out
 	std::string finishIslandName;
 	m_archipelago.FindIslandNameByHandle(m_finish, finishIslandName);
 	std::string header("Race to \""+ finishIslandName +"\" at step " + boost::lexical_cast<std::string>(m_raceStep));
