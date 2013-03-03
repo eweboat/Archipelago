@@ -2,7 +2,7 @@
 #include "Factory.h"
 #include <string>
 
-#include "VehicleBase.h"
+#include "Vehicle.h"
 
 Archipelago::Archipelago(const std::string& islandFile, const std::string& linkFile)
 {

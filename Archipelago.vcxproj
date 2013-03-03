@@ -66,14 +66,14 @@
     <ClCompile Include="Factory.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Race.cpp" />
-    <ClCompile Include="VehicleBase.cpp" />
+    <ClCompile Include="Vehicle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Archipelago.h" />
     <ClInclude Include="Factory.h" />
     <ClInclude Include="GraphTypes.h" />
     <ClInclude Include="Race.h" />
-    <ClInclude Include="VehicleBase.h" />
+    <ClInclude Include="Vehicle.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

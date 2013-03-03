@@ -1,6 +1,6 @@
 #include "Race.h"
 #include "Archipelago.h"
-#include "VehicleBase.h" // todo remove when done
+#include "Vehicle.h" // todo remove when done
 
 
 Race::Race(const Archipelago& archipelago_, IslandHandle start, IslandHandle finish) :
