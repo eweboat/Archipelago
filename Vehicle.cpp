@@ -51,6 +51,7 @@ void VehicleBase::ChooseNextIsland(const std::vector<RaceLegProperties>& routeDa
 	}
 
 	// move to island secect at random from list of available options
+	// note that random is not behaving as randomly as I would like, need to investigate ..
 	unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
 	std::default_random_engine generator(seed);
 	std::uniform_int_distribution<unsigned int> distribution(0, validRoutes.size()-1);

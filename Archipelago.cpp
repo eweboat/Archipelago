@@ -1,8 +1,11 @@
 #include "Archipelago.h"
-#include "Factory.h"
 #include <string>
-
+#include <boost/graph/graphviz.hpp>
+//#include <boost/utility.hpp>
+#include "Factory.h"
 #include "Vehicle.h"
+#include "GraphTypes.h"
+
 
 Archipelago::Archipelago(const std::string& islandFile, const std::string& linkFile)
 {
@@ -83,7 +86,7 @@ bool Archipelago::FindIslandByName(const std::string& name, IslandHandle& island
 
 	// if key not in dict then find through search
 	// get the property map for vertex indices
-	graph_traits<Graph>::vertex_iterator it, end;
+	boost::graph_traits<Graph>::vertex_iterator it, end;
 	for (boost::tie( it, end ) = vertices(m_islandGraph); it != end; ++it)
 	{
 		if (m_islandGraph[*it].name == name)
@@ -116,8 +119,8 @@ void Archipelago::Visit(VehicleBase& vehicle) const
 	try
 	{
 		// get the property map for vertex indices
-		typedef property_map<Graph, vertex_index_t>::type IndexMap;
-		IndexMap index = get(vertex_index, m_islandGraph);
+		typedef boost::property_map<Graph, boost::vertex_index_t>::type IndexMap;
+		IndexMap index = get(boost::vertex_index, m_islandGraph);
 	
 		// for each adjacent node find route data
 		std::vector<RaceLegProperties> availableLinks;

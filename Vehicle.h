@@ -2,18 +2,31 @@
 #include <vector>
 #include "GraphTypes.h"
 
-enum LocomotionMechanism { Legs, Wheels, Wings };
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//  Class:			VehicleBase provides public interface to allow race interaction
+//  Specialisation: Derived classes must implement to the routing methods and by doing
+//					so define the node graph traversal rules
+//  Comments:		vehicles do not presently store name and so individual vehicles can not
+//					be easily differentiated except by memory address
+//
+/////////////////////////////////////////////////////////////////////////////////////
 
 class VehicleBase
 {
 public:
 	void Reset(IslandHandle location, IslandHandle target);
-	IslandHandle GetIsland() const;
+	
+	// navigation / position
 	void ChooseNextIsland(const std::vector<RaceLegProperties>& routeData);
-	std::string ToString() const { return ToStringImpl(); }
 	bool IsRouteValid(const RaceLegProperties& route) const { return IsRouteValidImpl(route); }
+	IslandHandle GetIsland() const;
+	
+	// will apply direct or indirect movement penalties
 	void ApplyMovementPenalties(const RaceLegProperties& route) { ApplyMovementPenaltiesImpl(route); }
 	void SkipNextMove() { m_missNextMove = true; }
+	
+	std::string ToString() const { return ToStringImpl(); }
 
 private:
 	virtual std::string ToStringImpl() const = 0;

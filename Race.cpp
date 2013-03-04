@@ -1,7 +1,13 @@
 #include "Race.h"
+#include <string>
+#include <boost\lexical_cast.hpp>
+#include "Factory.h"
 #include "Archipelago.h"
-#include "Vehicle.h" // todo remove when done
+#include "Vehicle.h" 
 
+const static std::string walkerVehicleString = "walker";
+const static std::string driverVehicleString = "driver";
+const static std::string flyerVehicleString = "flyer";
 
 Race::Race(const Archipelago& archipelago_, IslandHandle start, IslandHandle finish) :
 	m_archipelago(archipelago_),
@@ -21,12 +27,30 @@ Race::~Race()
 	}
 }
 
-void Race::AddVehicle(const std::string& type)
+void Race::AddVehicles(const std::vector<std::string>& vehicleTypes)
 {
-	// todo should probably create vehicle based on data ...
-	m_vehicles.push_back(new DrivingVehicle);
-	m_vehicles.push_back(new FlyingVehicle);
-	m_vehicles.push_back(new WalkingVehicle);
+	for( auto data : vehicleTypes)
+	{
+		// split data line into token
+		std::vector<std::string> tokens = TokeniseString(data);
+
+		// extract data to node
+		std::string vehicleType(tokens.at(0));
+		// perform lower case string comparision to map terrain type to enum
+		std::transform(vehicleType.begin(), vehicleType.end(), vehicleType.begin(), ::tolower);
+		if (vehicleType == walkerVehicleString)
+		{
+		m_vehicles.push_back(new WalkingVehicle);
+		}
+		else if (vehicleType == driverVehicleString)
+		{
+			m_vehicles.push_back(new DrivingVehicle);
+		}
+		else if (vehicleType == flyerVehicleString)
+		{
+			m_vehicles.push_back(new FlyingVehicle);
+		}
+	}
 }
 
 void Race::StartRace()
@@ -76,24 +100,25 @@ bool Race::IsFinished()
 	return m_isFinished;
 }
 
-void Race::PrintStatus() const
+std::string Race::GetStatusReport() const
 {
 	// format race data for print to standard out
 	std::string finishIslandName;
 	m_archipelago.FindIslandNameByHandle(m_finish, finishIslandName);
 	std::string header("Race to \""+ finishIslandName +"\" at step " + boost::lexical_cast<std::string>(m_raceStep));
-	std::cout << header << "\n" << std::string (header.size(), '-') << "\n";
+	std::string result = header + "\n" + std::string (header.size(), '-') + "\n";
 
 	for (auto vehicle : m_vehicles )
 	{
 		std::string islandName("NOT FOUND");
 		m_archipelago.FindIslandNameByHandle(vehicle->GetIsland(), islandName);
-		std::cout << vehicle->ToString() << "("+ boost::lexical_cast<std::string>(vehicle) +") is on island \""+ islandName +"\" \n";
+		result +=  vehicle->ToString() + "("+ boost::lexical_cast<std::string>(vehicle) +") is on island \""+ islandName +"\" \n";
 	}
 
 	if (m_isFinished)
 	{
-		std::cout << "RACE HAS BEEN WON!!\n";
+		result +=  "RACE HAS BEEN WON!!\n";
 	}
-	std::cout << "\n";
+	result += "\n";
+	return result;
 }

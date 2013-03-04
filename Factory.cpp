@@ -2,6 +2,15 @@
 #include <iostream>
 #include <algorithm>
 #include <boost\tokenizer.hpp>
+#include "Vehicle.h"
+
+// again it's a bit ugle having this data floating around like this, would prefer to read from data schedma
+const static std::string grassyTerrainString = "grassy";
+const static std::string mountainousTerrainString = "mountainous";
+const static std::string swampyTerrainString = "swampy";
+const static std::string strongLinkString = "strong";
+const static std::string weakLinkString = "weak";
+const static std::string nearLinkString = "near";
 
 std::vector<std::string> TokeniseString(const std::string& data)
 {
@@ -50,7 +59,7 @@ IslandProperties ExtractIslandData(const std::string& data)
 		throw std::runtime_error("invalid terrain type: " + terrainTypeString + "\n");
 	}
 
-	std::cout << "name = " << node.name << " terrain = " << terrainTypeString << "\n";
+	//std::cout << "name = " << node.name << " terrain = " << terrainTypeString << "\n";
 	return node;
 }
 
@@ -88,7 +97,6 @@ LinkData ExtractLinkData(const std::string& data)
 		throw std::runtime_error("invalid link type: " + linkType + "\n");
 	}
 
-	std::cout << "node A name = " << link.nodeNameA << ", node B name = " << link.nodeNameB << " link = " << linkType << "\n";
+	//std::cout << "node A name = " << link.nodeNameA << ", node B name = " << link.nodeNameB << " link = " << linkType << "\n";
 	return link;
 }
-
